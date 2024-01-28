@@ -1,24 +1,32 @@
 import { Endpoint } from "./endpoint";
 import cron from "node-cron";
-import { logger } from "./logger";
+import { v4 as uuidv4 } from "uuid";
+import Config from "./interfaces/config";
 
+/**
+ * HealthCheckTask class is responsible for Controlling health check task: start & stop
+ */
 export class HealthCheckTask {
-	private endpoint: Endpoint;
-	private schedule: string;
-	private task: cron.ScheduledTask;
+	public endpoint: Endpoint;
+	public schedule: string;
+	public task: cron.ScheduledTask;
+	public id: string;
 
-	constructor(endpoint: Endpoint, schedule: string) {
-		this.endpoint = endpoint;
+	constructor(config: Config, schedule: string) {
+		this.endpoint = new Endpoint(config);
 		this.schedule = schedule;
+		this.id = uuidv4();
 		this.task = cron.schedule(this.schedule, () => {
-			this.endpoint.checkHealth().then((isHealthy) => {
-				logger.info(
-					`Endpoint ${this.endpoint.url} is ${
-						isHealthy ? "healthy" : "not healthy"
-					}`
-				);
-			});
+			this.endpoint.checkHealth();
 		});
+	}
+
+	toJSON() {
+		return {
+			id: this.id,
+			endpoint: this.endpoint,
+			schedule: this.schedule,
+		};
 	}
 
 	start(): void {
@@ -27,5 +35,9 @@ export class HealthCheckTask {
 
 	stop(): void {
 		this.task.stop();
+	}
+
+	getStatus(): string {
+		return this.endpoint.status;
 	}
 }

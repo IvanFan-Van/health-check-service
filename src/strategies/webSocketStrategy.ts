@@ -1,20 +1,22 @@
-import { Config, Strategy } from "./strategyFactory";
+import Strategy from "../interfaces/strategy";
+import Config from "../interfaces/config";
 import WebSocket from "ws";
 
 export class WebSocketStrategy implements Strategy {
-	private config: Config;
+	private url: string;
+
 	constructor(config: Config) {
-		this.config = config;
+		this.url = config.url;
 	}
 
-	checkHealth(): Promise<boolean> {
+	checkHealth(): Promise<string> {
 		return new Promise((resolve, reject) => {
-			const ws = new WebSocket(this.config.url);
+			const ws = new WebSocket(this.url);
 			ws.on("open", () => {
-				resolve(true);
+				resolve("healthy");
 				ws.close();
 			});
-			ws.on("error", () => resolve(false));
+			ws.on("error", () => resolve("unhealthy"));
 		});
 	}
 }

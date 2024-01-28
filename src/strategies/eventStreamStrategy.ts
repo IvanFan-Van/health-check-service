@@ -1,27 +1,27 @@
-import { Config } from "./strategyFactory";
 import EventSource from "eventsource";
-import { Strategy } from "./strategyFactory";
+import Config from "../interfaces/config";
+import Strategy from "../interfaces/strategy";
 
 export class EventStreamStrategy implements Strategy {
-	private config: Config;
+	private url: string;
 
 	constructor(config: Config) {
-		this.config = config;
+		this.url = config.url;
 	}
 
-	checkHealth(): Promise<boolean> {
+	checkHealth(): Promise<string> {
 		return new Promise((resolve, reject) => {
-			const es = new EventSource(this.config.url);
+			const es = new EventSource(this.url);
 			let isHealthy = false;
 			const timeout = setTimeout(() => {
 				if (!isHealthy) {
-					resolve(false);
+					resolve("unhealthy");
 				}
 				es.close();
 			}, 5000);
 			es.onmessage = () => {
 				isHealthy = true;
-				resolve(true);
+				resolve("healthy");
 				clearTimeout(timeout);
 				es.close();
 			};
