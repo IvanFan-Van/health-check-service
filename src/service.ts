@@ -1,20 +1,26 @@
 import { ConfigValidator } from "./configValidator";
 import { HealthCheckTask } from "./healthCheckTask";
 import Config from "./interfaces/config";
+import ServiceConfig from "./interfaces/serviceConfig";
+import ServiceInterface from "./interfaces/Service";
 import { logger } from "./logger";
+import { v4 as uuidv4 } from "uuid";
 
 /**
  * Service class is responsible for generating health check tasks from config file
  * and manage the tasks.
  *
  */
-export class Service {
-	private tasks: HealthCheckTask[];
+export class Service implements ServiceInterface {
+	public id: string;
+	public tasks: HealthCheckTask[];
+	public name: string;
 
-	constructor(endpointsConfig: Config[]) {
+	constructor(serviceConfig: ServiceConfig) {
 		logger.info("Generating Health Check Tasks From Config File...");
-
-		this.tasks = endpointsConfig
+		this.id = uuidv4();
+		this.name = serviceConfig.serviceName;
+		this.tasks = serviceConfig.configs
 			.map((config, id) => {
 				logger.info(`Generating Health Check Task ${id + 1}...`);
 				try {
@@ -30,6 +36,7 @@ export class Service {
 				return task;
 			})
 			.filter((task) => task !== null) as HealthCheckTask[];
+		this.startHealthChecks();
 	}
 
 	getTasks() {
@@ -101,5 +108,13 @@ export class Service {
 				status: task.getStatus(),
 			};
 		});
+	}
+
+	toJSON() {
+		return {
+			id: this.id,
+			name: this.name,
+			tasks: this.tasks.map((task) => task.toJSON()),
+		};
 	}
 }

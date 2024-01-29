@@ -1,0 +1,42 @@
+{
+  message: 'Hello World!',
+  additional: {
+    url: 'http://example.com',
+    headers: { 'x-request-id': '1234567890' },
+    body: { foo: 'bar' },
+    method: 'GET'
+  },
+  level: 'error',
+  timestamp: '2024-01-28 14:12:28'
+}
+{
+  message: 'Hello World!',
+  additional: {
+    url: 'http://example.com',
+    headers: { 'x-request-id': '1234567890' },
+    body: { foo: 'bar' },
+    method: 'GET'
+  },
+  level: 'error',
+  timestamp: '2024-01-28 14:12:53'
+}
+undefined
+undefined
+undefined
+undefined
+undefined
+My Description before the message: {
+  "message": "Hello World!",
+  "additional": {
+    "url": "http://example.com",
+    "headers": {
+      "x-request-id": "1234567890"
+    },
+    "body": {
+      "foo": "bar"
+    },
+    "method": "GET"
+  },
+  "level": "error",
+  "timestamp": "2024-01-28 14:18:30"
+}

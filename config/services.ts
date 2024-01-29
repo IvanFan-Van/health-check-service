@@ -1,7 +1,9 @@
+import ServiceConfig from "../src/interfaces/serviceConfig";
+
 export default [
 	{
 		serviceName: "树洞API",
-		checkpoints: [
+		configs: [
 			{
 				type: "http",
 				url: "https://api.tripleuni.com/v4/post/list/all.php",
@@ -60,4 +62,4 @@ export default [
 			},
 		],
 	},
-];
+] as ServiceConfig[];

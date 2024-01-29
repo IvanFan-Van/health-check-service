@@ -52,6 +52,63 @@ export const logger = createLogger({
 	],
 });
 
+export const customLogger = createLogger({
+	format: format.combine(
+		format.timestamp({ format: "YYYY-MM-DD hh:mm:ss" }),
+		format.printf((info) => {
+			return `Health Check Detail: \n ${JSON.stringify(info, null, 2)}`;
+		})
+	),
+	transports: [
+		new transports.Console({
+			format: format.combine(
+				format.colorize(),
+				format.printf((info) => {
+					return `${info.timestamp} | ${info.level}: ${info.message.description}`;
+				})
+			),
+		}),
+		new transports.File({
+			filename: path.join(__dirname, "../logs/server.jsonl"),
+			format: format.combine(format.json()),
+		}),
+		new transports.File({
+			filename: path.join(__dirname, "../logs/server.log"),
+		}),
+	],
+});
+
+export const createLogObject = (
+	description: string,
+	request: any = null,
+	response: any = null,
+	stack: string | null = null
+) => {
+	let logRequest = null;
+	if (request) {
+		logRequest = {
+			url: request.url,
+			method: request.method,
+			headers: request.headers,
+			body: request.body,
+		};
+	}
+
+	let logResponse = null;
+	if (response) {
+		logResponse = {
+			status: response.status,
+			headers: response.headers,
+		};
+	}
+	return {
+		description,
+		request: logRequest,
+		response: logResponse,
+		stack: stack,
+	};
+};
+
 // serverLogger.info("This is info");
 // let err = new Error("this is error logger");
 // serverLogger.error({ message: err.message, stack: err.stack });
