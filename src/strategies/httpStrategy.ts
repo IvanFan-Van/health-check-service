@@ -4,19 +4,35 @@ import Config from "../interfaces/config";
 import { customLogger, createLogObject } from "../logger";
 import https from "https";
 import { Notifier } from "../notifier";
-import { create } from "ts-node";
 
 export class HttpStrategy implements Strategy {
 	private url: string;
 	private method: string;
 	private headers: Record<string, string>;
 	private body: any;
+	private validator: ((data: any) => boolean) | null;
 
 	constructor(config: Config) {
 		this.url = config.url;
 		this.method = config.method || "GET";
 		this.headers = config.headers || {};
 		this.body = config.body || {};
+		this.validator = config.validator || null;
+	}
+
+	private notifyFailure(message: string) {
+		const notifier = new Notifier("15257164640");
+		notifier.init().then(() => {
+			notifier.notify(message);
+		});
+	}
+
+	private isCertificateError(err: any) {
+		return (
+			err.message.includes("SSL certificate") ||
+			err.code === "CERT_HAS_EXPIRED" ||
+			err.message.includes("wrong version number")
+		);
 	}
 
 	// handle cases for PATCH, POST, PUT, DELETE
@@ -34,28 +50,26 @@ export class HttpStrategy implements Strategy {
 				return "unhealthy";
 			}
 
-			if (httpsFailed) {
-				customLogger.warn(
-					createLogObject(
-						`Health check for ${this.method} ${this.url}  ${err.response.status} is successful with http`,
-						req,
-						err.response
-					)
-				);
-				return "https expire";
-			} else {
-				customLogger.info(
-					createLogObject(
-						`Health check for ${this.method} ${this.url}  ${err.response.status} is successful`,
-						req,
-						err.response
-					)
-				);
-				return "healthy";
-			}
+			httpsFailed
+				? customLogger.warn(
+						createLogObject(
+							`Health check for ${this.method} ${this.url}  ${err.response.status} is successful with http`,
+							req,
+							err.response
+						)
+				  )
+				: customLogger.info(
+						createLogObject(
+							`Health check for ${this.method} ${this.url}  ${err.response.status} is successful`,
+							req,
+							err.response
+						)
+				  );
+			return httpsFailed ? "https expire" : "healthy";
 		}
 
-		// log error
+		// Dealing with different error cases:
+		// 1) out of 2xx 	2) no response 	3) internal error
 		if (err.response) {
 			customLogger.error(
 				createLogObject(
@@ -81,14 +95,12 @@ export class HttpStrategy implements Strategy {
 			);
 		}
 
-		const notifier = new Notifier("15257164640");
-		notifier.init().then(() => {
-			notifier.notify(`Health check failed for ${this.method} ${this.url}`);
-		});
+		this.notifyFailure(`Health check failed for ${this.method} ${this.url}`);
 		return "unhealthy";
 	}
 
 	checkHealth(): Promise<string> {
+		// construct https Request
 		let httpsRequest = {
 			url: this.url,
 			method: this.method,
@@ -99,6 +111,16 @@ export class HttpStrategy implements Strategy {
 		// Try https first
 		return axios(httpsRequest)
 			.then((res) => {
+				if (this.validator && !this.validator(res.data)) {
+					customLogger.error(
+						createLogObject(
+							`Validator failed for ${this.url}`,
+							httpsRequest,
+							res.data
+						)
+					);
+					return "unhealthy";
+				}
 				customLogger.info(
 					createLogObject(
 						`Health check for ${this.method} ${this.url}  ${res.status} is successful`,
@@ -117,11 +139,7 @@ export class HttpStrategy implements Strategy {
 					data: this.body,
 				};
 
-				if (
-					err.message.includes("SSL certificate") ||
-					err.code === "CERT_HAS_EXPIRED" ||
-					err.message.includes("wrong version number")
-				) {
+				if (this.isCertificateError(err)) {
 					return axios(httpRequest)
 						.then((res) => {
 							customLogger.warn(

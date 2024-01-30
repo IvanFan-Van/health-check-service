@@ -18,7 +18,7 @@ export class EventStreamStrategy implements Strategy {
 					resolve("unhealthy");
 				}
 				es.close();
-			}, 5000);
+			}, 20000);
 			es.onmessage = () => {
 				isHealthy = true;
 				resolve("healthy");

@@ -17,12 +17,17 @@ export class Service implements ServiceInterface {
 	public name: string;
 
 	constructor(serviceConfig: ServiceConfig) {
-		logger.info("Generating Health Check Tasks From Config File...");
+		logger.info(
+			`Generating Health Check Tasks for ${serviceConfig.serviceName}...`
+		);
+		logger.info(`Expected ${serviceConfig.configs.length} tasks`);
 		this.id = uuidv4();
 		this.name = serviceConfig.serviceName;
 		this.tasks = serviceConfig.configs
 			.map((config, id) => {
-				logger.info(`Generating Health Check Task ${id + 1}...`);
+				logger.info(
+					`Generating Health Check Task ${id + 1} type: ${config.type} ...`
+				);
 				try {
 					ConfigValidator.validate(config);
 				} catch (err: any) {

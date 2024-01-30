@@ -44,7 +44,7 @@ export default [
 					post_public: 2,
 					post_is_uni: true,
 				},
-				schedule: "0 * * * *",
+				schedule: "* * * * *",
 			},
 			{
 				type: "http",
@@ -59,6 +59,46 @@ export default [
 					search_mode: "default",
 				},
 				schedule: "* * * * *",
+			},
+		],
+	},
+	{
+		serviceName: "Other",
+		configs: [
+			{
+				type: "http",
+				url: "https://upload.tripleuni.com/index.php?bucket=boatonland-1307992092&region=ap-beijing",
+				method: "GET",
+				schedule: "* * * * *",
+				validator: (responseJson: any) => {
+					if (responseJson.credentials.sessionToken) {
+						return true;
+					}
+					return false;
+				},
+			},
+			{
+				type: "http",
+				url: "https://i.boatonland.com/avatar/hkughost.svg",
+				method: "GET",
+				schedule: "* * * * *",
+			},
+			{
+				type: "http",
+				url: "https://tripleuni.com",
+				method: "GET",
+				schedule: "* * * * *",
+			},
+			{
+				type: "http",
+				url: "https://terms.tripleuni.com/hku/agreement/",
+				method: "GET",
+				schedule: "* * * * *",
+			},
+			{
+				type: "eventstream",
+				url: "https://chat.tripleuni.com/?question=hello&token=xxx&histroy=[]",
+				schedule: "* * * * * *",
 			},
 		],
 	},

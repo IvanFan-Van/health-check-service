@@ -5,4 +5,5 @@ export default interface Config {
 	method?: string;
 	headers?: Record<string, string>;
 	body?: any;
+	validator?: (data: any) => boolean;
 }
