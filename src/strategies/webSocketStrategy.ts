@@ -23,16 +23,11 @@ export class WebSocketStrategy implements Strategy {
 			const ws = new WebSocket(this.url);
 			ws.on("open", () => {
 				resolve("healthy");
-				const logMessage = `Health check for ${this.url} is successful`;
-				customLogger.info(logMessage);
 				ws.close();
 			});
 			ws.on("error", (err) => {
 				resolve("unhealthy");
 				const logMessage = `Health check failed for ${this.url}`;
-				customLogger.error(
-					createLogObject(logMessage, { url: this.url }, { error: err })
-				);
 				this.notifyFailure(logMessage);
 			});
 		});

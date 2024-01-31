@@ -1,7 +1,8 @@
-import axios from "axios";
+import { LogRequest } from "./../logger";
+import axios, { AxiosResponse } from "axios";
 import Strategy from "../interfaces/strategy";
 import Config from "../interfaces/config";
-import { customLogger, createLogObject } from "../logger";
+import { logError, logInfo, logWarn } from "../logger";
 import https from "https";
 import { Notifier } from "../notifier";
 
@@ -11,6 +12,7 @@ export class HttpStrategy implements Strategy {
 	private headers: Record<string, string>;
 	private body: any;
 	private validator: ((data: any) => boolean) | null;
+	private agent: https.Agent;
 
 	constructor(config: Config) {
 		this.url = config.url;
@@ -18,6 +20,7 @@ export class HttpStrategy implements Strategy {
 		this.headers = config.headers || {};
 		this.body = config.body || {};
 		this.validator = config.validator || null;
+		this.agent = new https.Agent({ rejectUnauthorized: false });
 	}
 
 	private notifyFailure(message: string) {
@@ -27,7 +30,7 @@ export class HttpStrategy implements Strategy {
 		});
 	}
 
-	private isCertificateError(err: any) {
+	private isHttpsError(err: any) {
 		return (
 			err.message.includes("SSL certificate") ||
 			err.code === "CERT_HAS_EXPIRED" ||
@@ -36,102 +39,90 @@ export class HttpStrategy implements Strategy {
 	}
 
 	// handle cases for PATCH, POST, PUT, DELETE
-	handleError(
-		err: any,
-		req: any,
-		httpsFailed: boolean
-	): "healthy" | "unhealthy" | "https expire" {
-		// PATCH | POST | PUT | DELETE request out of 2xx, but not 404. healthy
-		if (this.method !== "GET" && err.response && err.response.status !== 404) {
-			// Check if the response is a JSON object
-			try {
-				JSON.stringify(err.response.data);
-			} catch (err) {
+	private handleError(request: LogRequest, err: any, isHttps: boolean = false): string {
+		// Dealing with different error cases:
+		// 1) out of 2xx
+		if (err.response) {
+			return this.handleResponse(request, err.response, isHttps);
+		}
+
+		let message;
+		// 2) no response
+		if (err.request) {
+			message = `Request made but no response for ${this.method} ${request.url}`;
+		}
+		// 3) internal error
+		else {
+			message = `Health check failed with internal error ${err.message}`;
+		}
+
+		logError({ message, request, stack: err.stack });
+		this.notifyFailure(`Health check failed for ${this.method} ${request.url}`);
+		return "unhealthy";
+	}
+
+	private isJSON(obj: any): boolean {
+		try {
+			JSON.stringify(obj);
+			return true;
+		} catch (err) {
+			return false;
+		}
+	}
+
+	/**
+	 * Handles response from axios request
+	 */
+	private handleResponse(
+		request: LogRequest,
+		response: AxiosResponse,
+		isHttps: boolean = false
+	): string {
+		if (response.status === 404) {
+			let message = `Health check failed with 404 for ${this.method} ${request.url}`;
+			logError({ message, request, response });
+			return "unhealthy";
+		}
+
+		// out of 2xx && not GET
+		if (response.status < 200 && response.status >= 300 && request.method.toUpperCase() !== "GET") {
+			if (!this.isJSON(response.data)) {
+				let message = `Response is not JSON for ${this.method} ${request.url}`;
+				logError({ message, request, response });
 				return "unhealthy";
 			}
-
-			httpsFailed
-				? customLogger.warn(
-						createLogObject(
-							`Health check for ${this.method} ${this.url}  ${err.response.status} is successful with http`,
-							req,
-							err.response
-						)
-				  )
-				: customLogger.info(
-						createLogObject(
-							`Health check for ${this.method} ${this.url}  ${err.response.status} is successful`,
-							req,
-							err.response
-						)
-				  );
-			return httpsFailed ? "https expire" : "healthy";
 		}
 
-		// Dealing with different error cases:
-		// 1) out of 2xx 	2) no response 	3) internal error
-		if (err.response) {
-			customLogger.error(
-				createLogObject(
-					`Health check failed with ${err.response.status} for ${this.method} ${this.url}`,
-					req,
-					err.response
-				)
-			);
-		} else if (err.request) {
-			customLogger.error(
-				createLogObject(
-					`Request made but no response for ${this.method} ${this.url}`,
-					req,
-					err.stack
-				)
-			);
-		} else {
-			customLogger.error(
-				createLogObject(
-					`Health check failed with internal error ${err.message}`,
-					err.stack
-				)
-			);
+		// validator exists && validator passed
+		if (this.validator && !this.validator(response.data)) {
+			let message = `Validator failed for ${request.url}`;
+			logError({ message, request, response });
+			return "unhealthy";
 		}
 
-		this.notifyFailure(`Health check failed for ${this.method} ${this.url}`);
-		return "unhealthy";
+		let message = `Health check for ${this.method} ${request.url}  ${response.status} is successful`;
+
+		isHttps ? logInfo({ message, request, response }) : logWarn({ message, request, response });
+
+		return isHttps ? "healthy" : "https expire";
 	}
 
 	checkHealth(): Promise<string> {
 		// construct https Request
-		let httpsRequest = {
+		let httpsRequest: LogRequest = {
 			url: this.url,
 			method: this.method,
 			headers: this.headers,
 			data: this.body,
-			httpsAgent: new https.Agent({ rejectUnauthorized: false }),
+			httpsAgent: this.agent,
 		};
 		// Try https first
 		return axios(httpsRequest)
 			.then((res) => {
-				if (this.validator && !this.validator(res.data)) {
-					customLogger.error(
-						createLogObject(
-							`Validator failed for ${this.url}`,
-							httpsRequest,
-							res.data
-						)
-					);
-					return "unhealthy";
-				}
-				customLogger.info(
-					createLogObject(
-						`Health check for ${this.method} ${this.url}  ${res.status} is successful`,
-						httpsRequest,
-						res
-					)
-				);
-				return "healthy";
+				return this.handleResponse(httpsRequest, res, true);
 			})
 			.catch((err) => {
-				// Generating http request
+				// construct http request
 				let httpRequest = {
 					url: this.url.replace("https", "http"),
 					method: this.method,
@@ -139,25 +130,17 @@ export class HttpStrategy implements Strategy {
 					data: this.body,
 				};
 
-				if (this.isCertificateError(err)) {
+				if (this.isHttpsError(err)) {
 					return axios(httpRequest)
 						.then((res) => {
-							customLogger.warn(
-								createLogObject(
-									`Health check for ${this.method} ${this.url}  ${res.status} is successful with http`,
-									httpRequest,
-									res
-								)
-							);
-							return "https expire";
+							return this.handleResponse(httpRequest, res, false);
 						})
 						.catch((err) => {
 							// http failed
-							return this.handleError(err, httpRequest, true);
+							return this.handleError(httpRequest, err, false);
 						});
-				} else {
-					return this.handleError(err, httpsRequest, false);
 				}
+				return this.handleError(httpsRequest, err, true);
 			});
 	}
 }

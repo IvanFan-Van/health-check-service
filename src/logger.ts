@@ -1,6 +1,16 @@
 import { createLogger, format, transports } from "winston";
 import path from "path";
 import util from "util";
+import { AxiosResponse } from "axios";
+import https from "https";
+
+export type LogRequest = {
+	url: string;
+	method: string;
+	headers: any;
+	data: any;
+	httpsAgent?: https.Agent;
+};
 
 const customTimeFormat = format.timestamp({ format: "YYYY-MM-DD hh:mm:ss" });
 const customServerLoggerFormat = format.combine(
@@ -80,9 +90,9 @@ export const customLogger = createLogger({
 
 export const createLogObject = (
 	description: string,
-	request: any = null,
-	response: any = null,
-	stack: string | null = null
+	request?: LogRequest,
+	response?: AxiosResponse,
+	stack?: string
 ) => {
 	let logRequest = null;
 	if (request) {
@@ -90,7 +100,7 @@ export const createLogObject = (
 			url: request.url,
 			method: request.method,
 			headers: request.headers,
-			body: request.body,
+			body: request.data,
 		};
 	}
 
@@ -108,6 +118,48 @@ export const createLogObject = (
 		stack: stack,
 	};
 };
+
+export function logError({
+	message,
+	request,
+	response,
+	stack,
+}: {
+	message: string;
+	request?: LogRequest;
+	response?: AxiosResponse;
+	stack?: string;
+}) {
+	customLogger.error(createLogObject(message, request, response, stack));
+}
+
+export function logInfo({
+	message,
+	request,
+	response,
+	stack,
+}: {
+	message: string;
+	request?: LogRequest;
+	response?: AxiosResponse;
+	stack?: string;
+}) {
+	customLogger.info(createLogObject(message, request, response, stack));
+}
+
+export function logWarn({
+	message,
+	request,
+	response,
+	stack,
+}: {
+	message: string;
+	request?: LogRequest;
+	response?: AxiosResponse;
+	stack?: string;
+}) {
+	customLogger.warn(createLogObject(message, request, response, stack));
+}
 
 // serverLogger.info("This is info");
 // let err = new Error("this is error logger");
