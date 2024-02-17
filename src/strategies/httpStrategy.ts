@@ -22,10 +22,8 @@ export class HttpStrategy implements Strategy {
 	}
 
 	private notifyFailure(message: string) {
-		const notifier = new Notifier("15257164640");
-		notifier.init().then(() => {
-			notifier.notify(message);
-		});
+		const notifier = Notifier.getInstance();
+		notifier.notify(message);
 	}
 
 	private isHttpsError(err: any) {

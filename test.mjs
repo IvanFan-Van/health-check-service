@@ -1,12 +1,9 @@
 import { createRequire } from "module";
 const require = createRequire(import.meta.url);
-const data = require("./config/services.json");
-data.forEach((service) => {
-	service.configs.forEach((config) => {
-		if (config.validator) {
-			config.validator = eval(`(${config.validator})`);
-		}
-	});
-});
 
-export const test = 1;
+function loadNotifyConfig() {
+	return require("./config/feishu_notify.json");
+}
+
+const users = loadNotifyConfig();
+console.log(users);

@@ -1,7 +1,7 @@
 import { createRequire } from "module";
+const require = createRequire(import.meta.url);
 
 export function loadConfig() {
-	const require = createRequire(import.meta.url);
 	const data = require("../config/services.json");
 	data.forEach((service: any) => {
 		service.configs.forEach((config: any) => {
@@ -11,6 +11,10 @@ export function loadConfig() {
 		});
 	});
 	return data;
+}
+
+export function loadNotifyConfig() {
+	return require("../config/feishu_notify.json");
 }
 
 export function updateConfig(config: any) {
