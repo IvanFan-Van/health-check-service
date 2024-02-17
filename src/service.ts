@@ -1,9 +1,9 @@
-import { ConfigValidator } from "./configValidator";
-import { HealthCheckTask } from "./healthCheckTask";
-import Config from "./interfaces/config";
-import ServiceConfig from "./interfaces/serviceConfig";
-import ServiceInterface from "./interfaces/Service";
-import { logger } from "./logger";
+import { ConfigValidator } from "./configValidator.js";
+import { HealthCheckTask } from "./healthCheckTask.js";
+import Config from "./interfaces/config.js";
+import ServiceConfig from "./interfaces/serviceConfig.js";
+import ServiceInterface from "./interfaces/Service.js";
+import { logger } from "./logger.js";
 import { v4 as uuidv4 } from "uuid";
 
 /**
@@ -17,17 +17,13 @@ export class Service implements ServiceInterface {
 	public name: string;
 
 	constructor(serviceConfig: ServiceConfig) {
-		logger.info(
-			`Generating Health Check Tasks for ${serviceConfig.serviceName}...`
-		);
+		logger.info(`Generating Health Check Tasks for ${serviceConfig.serviceName}...`);
 		logger.info(`Expected ${serviceConfig.configs.length} tasks`);
 		this.id = uuidv4();
 		this.name = serviceConfig.serviceName;
 		this.tasks = serviceConfig.configs
 			.map((config, id) => {
-				logger.info(
-					`Generating Health Check Task ${id + 1} type: ${config.type} ...`
-				);
+				logger.info(`Generating Health Check Task ${id + 1} type: ${config.type} ...`);
 				try {
 					ConfigValidator.validate(config);
 				} catch (err: any) {

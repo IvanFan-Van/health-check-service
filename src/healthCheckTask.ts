@@ -1,7 +1,7 @@
-import { Endpoint } from "./endpoint";
+import { Endpoint } from "./endpoint.js";
 import cron from "node-cron";
 import { v4 as uuidv4 } from "uuid";
-import Config from "./interfaces/config";
+import Config from "./interfaces/config.js";
 
 /**
  * HealthCheckTask class is responsible for Controlling health check task: start & stop

@@ -1,5 +1,5 @@
-import Config from "./interfaces/config";
-import { logger } from "./logger";
+import Config from "./interfaces/config.js";
+import { logger } from "./logger.js";
 import cron from "node-cron";
 
 export class ConfigValidator {
@@ -16,9 +16,7 @@ export class ConfigValidator {
 
 		// Check for invalid schedule
 		if (!cron.validate(config.schedule)) {
-			throw new Error(
-				`Invalid schedule ${config.schedule} for endpoint ${config.url}`
-			);
+			throw new Error(`Invalid schedule ${config.schedule} for endpoint ${config.url}`);
 		}
 	}
 }

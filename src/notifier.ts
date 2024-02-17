@@ -1,4 +1,4 @@
-import { logger } from "./logger";
+import { logger } from "./logger.js";
 import axios from "axios";
 
 export class Notifier {
@@ -33,8 +33,7 @@ export class Notifier {
 					},
 				})
 					.then((res) => {
-						const openId =
-							res.data.data["mobile_users"][phoneNumber][0]["open_id"];
+						const openId = res.data.data["mobile_users"][phoneNumber][0]["open_id"];
 						return openId;
 					})
 					.catch((err) => {

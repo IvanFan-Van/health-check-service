@@ -1,8 +1,8 @@
-import Strategy from "./interfaces/strategy";
-import Config from "./interfaces/config";
-import { EventStreamStrategy } from "./strategies/eventStreamStrategy";
-import { HttpStrategy } from "./strategies/httpStrategy";
-import { WebSocketStrategy } from "./strategies/webSocketStrategy";
+import Strategy from "./interfaces/strategy.js";
+import Config from "./interfaces/config.js";
+import { EventStreamStrategy } from "./strategies/eventStreamStrategy.js";
+import { HttpStrategy } from "./strategies/httpStrategy.js";
+import { WebSocketStrategy } from "./strategies/webSocketStrategy.js";
 
 export class Endpoint {
 	public url: string;
@@ -35,9 +35,7 @@ export class Endpoint {
 				return this.status;
 			})
 			.catch((err) => {
-				throw new Error(
-					err.message + "\n" + `Endpoint: ${this.url} failed to check health`
-				);
+				throw new Error(err.message + "\n" + `Endpoint: ${this.url} failed to check health`);
 			});
 	}
 }

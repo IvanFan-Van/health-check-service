@@ -1,4 +1,6 @@
-import ServiceConfig from "../src/interfaces/serviceConfig";
+import * as dotenv from "dotenv";
+dotenv.config();
+import ServiceConfig from "../src/interfaces/serviceConfig.js";
 
 export default [
 	{
@@ -15,6 +17,9 @@ export default [
 					token: process.env.TOKEN,
 				},
 				schedule: "* * * * *",
+				validator: (data) => {
+					return data.code === 200;
+				},
 			},
 			{
 				type: "http",
@@ -28,6 +33,9 @@ export default [
 					uni_post_id: 304291,
 				},
 				schedule: "* * * * *",
+				validator: (data) => {
+					return data.code === 200;
+				},
 			},
 			{
 				type: "http",
@@ -45,6 +53,9 @@ export default [
 					post_is_uni: true,
 				},
 				schedule: "* * * * *",
+				validator: (data) => {
+					return data.code === 200;
+				},
 			},
 			{
 				type: "http",
@@ -59,6 +70,9 @@ export default [
 					search_mode: "default",
 				},
 				schedule: "* * * * *",
+				validator: (data) => {
+					return data.code === 200;
+				},
 			},
 		],
 	},
@@ -96,10 +110,60 @@ export default [
 				schedule: "* * * * *",
 			},
 			{
+				type: "websocket",
+				url: "wss://ws.tripleuni.com:7230",
+				body: {
+					type: "bind",
+					token: process.env.TOKEN,
+				},
+				schedule: "* * * * *",
+				validator: (data) => {
+					return JSON.stringify(data) === JSON.stringify({ type: "bind", bind_result: "success" });
+				},
+			},
+			{
 				type: "eventstream",
-				url: "https://chat.tripleuni.com/?question=hello&token=xxx&histroy=[]",
-				schedule: "* * * * * *",
+				url: `https://chat.tripleuni.com/?question=hello&token=${process.env.TOKEN}&histroy=[]`,
+				schedule: "0 * * * *",
 			},
 		],
 	},
+	// {
+	// 	serviceName: "simplest blog",
+	// 	configs: [
+	// 		{
+	// 			type: "http",
+	// 			url: "https://localhost:8000/api/v1",
+	// 			method: "GET",
+	// 			schedule: "*/10 * * * * *",
+	// 		},
+	// 		{
+	// 			type: "http",
+	// 			url: "https://localhost:8000/api/v1/cd4eb9f4-f617-490e-8135-a3b3d4874898",
+	// 			method: "GET",
+	// 			schedule: "*/10 * * * * *",
+	// 		},
+	// 		{
+	// 			type: "http",
+	// 			url: "https://localhost:8000/api/v1",
+	// 			method: "POST",
+	// 			schedule: "*/10 * * * * *",
+	// 			data: {},
+	// 		},
+	// 		{
+	// 			type: "http",
+	// 			url: "https://localhost:8000/api/v1/333",
+	// 			method: "PATCH",
+	// 			schedule: "*/10 * * * * *",
+	// 			data: {},
+	// 		},
+	// 		{
+	// 			type: "http",
+	// 			url: "https://localhost:8000/api/v1/444",
+	// 			method: "DELETE",
+	// 			schedule: "*/10 * * * * *",
+	// 		},
+
+	// 	],
+	// },
 ] as ServiceConfig[];

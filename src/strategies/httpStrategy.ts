@@ -1,18 +1,17 @@
-import { LogRequest } from "./../logger";
+import { LogRequest } from "./../logger.js";
 import axios, { AxiosResponse } from "axios";
-import Strategy from "../interfaces/strategy";
-import Config from "../interfaces/config";
-import { logError, logInfo, logWarn } from "../logger";
+import Strategy from "../interfaces/strategy.js";
+import Config from "../interfaces/config.js";
+import { logError, logInfo, logWarn } from "../logger.js";
 import https from "https";
-import { Notifier } from "../notifier";
-
+import { Notifier } from "../notifier.js";
 export class HttpStrategy implements Strategy {
 	private url: string;
 	private method: string;
 	private headers: Record<string, string>;
 	private body: any;
 	private validator: ((data: any) => boolean) | null;
-	private agent: https.Agent;
+	private static agent: https.Agent = new https.Agent({ rejectUnauthorized: false });
 
 	constructor(config: Config) {
 		this.url = config.url;
@@ -20,7 +19,6 @@ export class HttpStrategy implements Strategy {
 		this.headers = config.headers || {};
 		this.body = config.body || {};
 		this.validator = config.validator || null;
-		this.agent = new https.Agent({ rejectUnauthorized: false });
 	}
 
 	private notifyFailure(message: string) {
@@ -114,7 +112,7 @@ export class HttpStrategy implements Strategy {
 			method: this.method,
 			headers: this.headers,
 			data: this.body,
-			httpsAgent: this.agent,
+			httpsAgent: HttpStrategy.agent,
 		};
 		// Try https first
 		return axios(httpsRequest)

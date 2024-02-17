@@ -1,4 +1,4 @@
-import Config from "./config";
+import Config from "./config.js";
 
 export default interface ServiceConfig {
 	serviceName: string;

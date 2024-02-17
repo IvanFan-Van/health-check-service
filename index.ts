@@ -1,7 +1,8 @@
-import { Service } from "./src/service";
+import { Service } from "./src/service.js";
 import express from "express";
-import servicesConfig from "./config/services";
 import * as dotenv from "dotenv";
+import { loadConfig } from "./src/loadConfig.js";
+import ServiceConfig from "./src/interfaces/serviceConfig.js";
 dotenv.config();
 
 const app = express();
@@ -24,9 +25,7 @@ app.get("/services/:id", (req, res) => {
 });
 
 app.get("/services/:serviceId/tasks", (req, res) => {
-	const service = services.find(
-		(service) => service.id === req.params.serviceId
-	);
+	const service = services.find((service) => service.id === req.params.serviceId);
 	if (!service) {
 		return res.status(404).json({
 			message: "Service not found",
@@ -36,9 +35,7 @@ app.get("/services/:serviceId/tasks", (req, res) => {
 });
 
 app.get("/services/:serviceId/tasks/:taskId", (req, res) => {
-	const service = services.find(
-		(service) => service.id === req.params.serviceId
-	);
+	const service = services.find((service) => service.id === req.params.serviceId);
 	if (!service) {
 		return res.status(404).json({
 			message: "Service not found",
@@ -54,9 +51,7 @@ app.get("/services/:serviceId/tasks/:taskId", (req, res) => {
 });
 
 app.get("/services/:serviceId/status", (req, res) => {
-	const service = services.find(
-		(service) => service.id === req.params.serviceId
-	);
+	const service = services.find((service) => service.id === req.params.serviceId);
 	if (!service) {
 		return res.status(404).json({
 			message: "Service not found",
@@ -65,54 +60,56 @@ app.get("/services/:serviceId/status", (req, res) => {
 	res.json(service.getAllStatus());
 });
 
-app.post("/services/:serviceId/tasks", (req, res) => {
-	const service = services.find(
-		(service) => service.id === req.params.serviceId
-	);
-	if (!service) {
-		return res.status(404).json({
-			message: "Service not found",
-		});
-	}
-	const task = service.createTask(req.body);
-	res.json(task.toJSON());
-});
+// app.post("/services/:serviceId/tasks", (req, res) => {
+// 	const service = services.find(
+// 		(service) => service.id === req.params.serviceId
+// 	);
+// 	if (!service) {
+// 		return res.status(404).json({
+// 			message: "Service not found",
+// 		});
+// 	}
+// 	const task = service.createTask(req.body);
+// 	res.json(task.toJSON());
+// });
 
-app.put("/services/:serviceId/tasks/:taskId", (req, res) => {
-	const service = services.find(
-		(service) => service.id === req.params.serviceId
-	);
-	if (!service) {
-		return res.status(404).json({
-			message: "Service not found",
-		});
-	}
-	const task = service.updateTask(req.params.taskId, req.body);
-	res.json(task.toJSON());
-});
+// app.put("/services/:serviceId/tasks/:taskId", (req, res) => {
+// 	const service = services.find(
+// 		(service) => service.id === req.params.serviceId
+// 	);
+// 	if (!service) {
+// 		return res.status(404).json({
+// 			message: "Service not found",
+// 		});
+// 	}
+// 	const task = service.updateTask(req.params.taskId, req.body);
+// 	res.json(task.toJSON());
+// });
 
-app.delete("/services/:serviceId/tasks/:taskId", (req, res) => {
-	const service = services.find(
-		(service) => service.id === req.params.serviceId
-	);
-	if (!service) {
-		return res.status(404).json({
-			message: "Service not found",
-		});
-	}
-	const task = service.deleteTask(req.params.taskId);
-	if (!task) {
-		return res.status(404).json({
-			message: "Task not found",
-		});
-	}
-	res.json(task.toJSON());
-});
+// app.delete("/services/:serviceId/tasks/:taskId", (req, res) => {
+// 	const service = services.find(
+// 		(service) => service.id === req.params.serviceId
+// 	);
+// 	if (!service) {
+// 		return res.status(404).json({
+// 			message: "Service not found",
+// 		});
+// 	}
+// 	const task = service.deleteTask(req.params.taskId);
+// 	if (!task) {
+// 		return res.status(404).json({
+// 			message: "Task not found",
+// 		});
+// 	}
+// 	res.json(task.toJSON());
+// });
 
 app.listen(PORT, () => {
 	console.log(`Server is running at localhost: ${PORT}`);
 });
 
-let services = servicesConfig.map((serviceConfig) => {
+const serviceConfigs: ServiceConfig[] = loadConfig();
+
+let services = serviceConfigs.map((serviceConfig: ServiceConfig) => {
 	return new Service(serviceConfig);
 });

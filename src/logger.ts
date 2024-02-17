@@ -1,8 +1,12 @@
 import { createLogger, format, transports } from "winston";
 import path from "path";
 import util from "util";
-import { AxiosResponse } from "axios";
 import https from "https";
+import { fileURLToPath } from "url";
+import { dirname } from "path";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 export type LogRequest = {
 	url: string;
@@ -90,8 +94,8 @@ export const customLogger = createLogger({
 
 export const createLogObject = (
 	description: string,
-	request?: LogRequest,
-	response?: AxiosResponse,
+	request?: any,
+	response?: any,
 	stack?: string
 ) => {
 	let logRequest = null;
@@ -109,6 +113,7 @@ export const createLogObject = (
 		logResponse = {
 			status: response.status,
 			headers: response.headers,
+			body: response.data,
 		};
 	}
 	return {
@@ -126,8 +131,8 @@ export function logError({
 	stack,
 }: {
 	message: string;
-	request?: LogRequest;
-	response?: AxiosResponse;
+	request?: any;
+	response?: any;
 	stack?: string;
 }) {
 	customLogger.error(createLogObject(message, request, response, stack));
@@ -140,8 +145,8 @@ export function logInfo({
 	stack,
 }: {
 	message: string;
-	request?: LogRequest;
-	response?: AxiosResponse;
+	request?: any;
+	response?: any;
 	stack?: string;
 }) {
 	customLogger.info(createLogObject(message, request, response, stack));
@@ -154,8 +159,8 @@ export function logWarn({
 	stack,
 }: {
 	message: string;
-	request?: LogRequest;
-	response?: AxiosResponse;
+	request?: any;
+	response?: any;
 	stack?: string;
 }) {
 	customLogger.warn(createLogObject(message, request, response, stack));

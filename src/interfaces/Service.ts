@@ -1,4 +1,4 @@
-import { HealthCheckTask } from "../healthCheckTask";
+import { HealthCheckTask } from "../healthCheckTask.js";
 
 export default interface Service {
 	id: string;
