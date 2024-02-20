@@ -17,7 +17,7 @@ export class WebSocketStrategy implements Strategy {
 
 	private notifyFailure(message: string) {
 		const notifier = Notifier.getInstance();
-		notifier.notify(message);
+		notifier.notifyChat(message);
 	}
 
 	checkHealth(): Promise<string> {

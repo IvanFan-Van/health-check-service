@@ -23,7 +23,7 @@ export class HttpStrategy implements Strategy {
 
 	private notifyFailure(message: string) {
 		const notifier = Notifier.getInstance();
-		notifier.notify(message);
+		notifier.notifyChat(message);
 	}
 
 	private isHttpsError(err: any) {

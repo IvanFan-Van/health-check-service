@@ -111,4 +111,42 @@ export class Notifier {
 			});
 		});
 	}
+
+	notifyChat(message: string) {
+		const chat_id = process.env.CHAT_ID;
+		this.getAuthenticationToken().then((token) => {
+			if (!token) {
+				logError({
+					message: "Failed to send message with error: failed to get token.",
+				});
+				return;
+			}
+
+			axios({
+				url: `https://open.feishu.cn/open-apis/im/v1/messages`,
+				method: "post",
+				data: {
+					receive_id: chat_id,
+					msg_type: "text",
+					content: JSON.stringify({
+						text: message || "empty message",
+					}),
+				},
+				headers: {
+					Authorization: `Bearer ${token}`,
+					"Content-Type": "application/json; charset=utf-8",
+				},
+				params: {
+					receive_id_type: "chat_id",
+				},
+			}).catch((err) => {
+				console.log(err.response.data);
+				logError({
+					message: `Failed to send message with error ${err.message}`,
+					response: err.response,
+				});
+				return;
+			});
+		});
+	}
 }
