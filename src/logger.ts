@@ -116,6 +116,41 @@ export function logWarn({
 	customLogger.warn(createLogObject(message, request, response, stack));
 }
 
+/**
+ * timestamp | level | action | result
+ * 2021-08-25 12:00:00 | info | Health check for GET https://www.google.com 200 is successful
+ * 2021-08-25 12:00:00 | error | Health check failed with 404 for GET https://www.google.com
+ * 2021-08-25 12:00:00 | warn | Response is not JSON for GET https://www.google.com
+ *
+ * For error and warn level, writing request and response to file for debugging
+ */
+
+export const logger = createLogger({
+	format: format.timestamp({
+		format: "YYYY-MM-DD HH:mm:ss",
+	}),
+	transports: [
+		new transports.Console({
+			format: format.combine(
+				format.colorize(),
+				format.printf((info) => {
+					return `${info.timestamp} [${info.level}]: ${info.message}`;
+				})
+			),
+		}),
+		new transports.File({
+			filename: "error.log",
+			level: "warn",
+			dirname: "logs",
+			format: format.prettyPrint(),
+		}),
+	],
+});
+
+logger.info("This is info");
+logger.error("This is error");
+logger.warn("This is warn");
+
 // serverLogger.info("This is info");
 // let err = new Error("this is error logger");
 // serverLogger.error({ message: err.message, stack: err.stack });
