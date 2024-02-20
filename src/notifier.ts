@@ -1,5 +1,5 @@
 import { loadNotifyConfig } from "./loadConfig.js";
-import { logger } from "./logger.js";
+import { logError } from "./logger.js";
 import axios from "axios";
 
 export class Notifier {
@@ -63,19 +63,26 @@ export class Notifier {
 				return tenant_access_token;
 			})
 			.catch((err) => {
-				logger.error({
+				logError({
 					message: `Failed to get authentication token with error ${err.message}`,
-					obj: err.response.data,
-					stack: err.stack,
+					response: err.response.data,
 				});
-				throw err;
+				return null;
 			});
 	}
+
 	// Send message to user
 	notify(message: string) {
 		this.users.forEach((user: any) => {
 			const openid = user.openid;
 			this.getAuthenticationToken().then((token) => {
+				if (!token) {
+					logError({
+						message: "Failed to send message with error: failed to get token.",
+					});
+					return;
+				}
+
 				axios({
 					url: `https://open.feishu.cn/open-apis/im/v1/messages`,
 					method: "post",
@@ -83,7 +90,7 @@ export class Notifier {
 						receive_id: openid,
 						msg_type: "text",
 						content: JSON.stringify({
-							text: message,
+							text: message || "empty message",
 						}),
 					},
 					headers: {
@@ -94,10 +101,10 @@ export class Notifier {
 						receive_id_type: "open_id",
 					},
 				}).catch((err) => {
-					logger.error({
+					console.log(err.response.data);
+					logError({
 						message: `Failed to send message with error ${err.message}`,
-						obj: err.response.data,
-						stack: err.stack,
+						response: err.response,
 					});
 					return;
 				});

@@ -1,5 +1,4 @@
 import Config from "./interfaces/config.js";
-import { logger } from "./logger.js";
 import cron from "node-cron";
 
 export class ConfigValidator {
