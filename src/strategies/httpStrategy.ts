@@ -1,8 +1,13 @@
-import { LogRequest } from "./../logger.js";
+import {
+	LogRequest,
+	createLogError,
+	createLogRequest,
+	createLogResponse,
+	logger,
+} from "./../logger.js";
 import axios, { AxiosResponse } from "axios";
 import Strategy from "../interfaces/strategy.js";
 import Config from "../interfaces/config.js";
-import { logError, logInfo, logWarn } from "../logger.js";
 import https from "https";
 import { Notifier } from "../notifier.js";
 export class HttpStrategy implements Strategy {
@@ -52,7 +57,8 @@ export class HttpStrategy implements Strategy {
 			message = `Health check failed with internal error ${err.message}`;
 		}
 
-		logError({ message, request, stack: err.stack });
+		// logError({ message, request, stack: err.stack });
+		logger.error(message, { request: createLogRequest(request), error: createLogError(err) });
 		this.notifyFailure(`Health check failed for ${this.method} ${request.url}`);
 		return "unhealthy";
 	}
@@ -76,7 +82,11 @@ export class HttpStrategy implements Strategy {
 	): string {
 		if (response.status === 404) {
 			let message = `Health check failed with 404 for ${this.method} ${request.url}`;
-			logError({ message, request, response });
+			// logError({ message, request, response });
+			logger.error(message, {
+				request: createLogRequest(request),
+				response: createLogResponse(response),
+			});
 			return "unhealthy";
 		}
 
@@ -84,7 +94,11 @@ export class HttpStrategy implements Strategy {
 		if (response.status < 200 && response.status >= 300 && request.method.toUpperCase() !== "GET") {
 			if (!this.isJSON(response.data)) {
 				let message = `Response is not JSON for ${this.method} ${request.url}`;
-				logError({ message, request, response });
+				// logError({ message, request, response });
+				logger.error(message, {
+					request: createLogRequest(request),
+					response: createLogResponse(response),
+				});
 				return "unhealthy";
 			}
 		}
@@ -92,13 +106,17 @@ export class HttpStrategy implements Strategy {
 		// validator exists && validator passed
 		if (this.validator && !this.validator(response.data)) {
 			let message = `Validator failed for ${request.url}`;
-			logError({ message, request, response });
+			// logError({ message, request, response });
+			logger.error(message, {
+				request: createLogRequest(request),
+				response: createLogResponse(response),
+			});
 			return "unhealthy";
 		}
 
 		let message = `Health check for ${this.method} ${request.url}  ${response.status} is successful`;
 
-		isHttps ? logInfo({ message, request, response }) : logWarn({ message, request, response });
+		isHttps ? logger.info(message) : logger.warn(message, { request, response });
 
 		return isHttps ? "healthy" : "https expire";
 	}

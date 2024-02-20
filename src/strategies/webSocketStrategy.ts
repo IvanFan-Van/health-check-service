@@ -2,7 +2,7 @@ import Strategy from "../interfaces/strategy.js";
 import Config from "../interfaces/config.js";
 import WebSocket from "ws";
 import { Notifier } from "../notifier.js";
-import { logError, logInfo } from "../logger.js";
+import { createLogError, createLogRequest, logger } from "../logger.js";
 
 export class WebSocketStrategy implements Strategy {
 	private url: string;
@@ -29,30 +29,32 @@ export class WebSocketStrategy implements Strategy {
 
 			ws.on("message", (data, isBinary) => {
 				if (isBinary) {
-					logError({ message: `Binary data received from WebSocket ${this.url}` });
+					// logError({ message: `Binary data received from WebSocket ${this.url}` });
+					logger.error(`Binary data received from WebSocket ${this.url}`);
 					resolve("unhealthy");
 				}
 
 				try {
 					const dataJson = JSON.parse(data.toString());
 					if (this.validator && this.validator(dataJson)) {
-						logInfo({
-							message: `Health check for ${this.url} is Successful`,
-							request: {
+						logger.info(`Health check for ${this.url} is Successful`, {
+							request: createLogRequest({
 								url: this.url,
 								data: this.data,
-							},
+							}),
 						});
 						resolve("healthy");
 					} else {
 						let message = `Health check failed for ${this.url}`;
-						logError({ message, response: dataJson });
+						// logError({ message, response: dataJson });
+						logger.error(message, { response: dataJson });
 						this.notifyFailure(message);
 						resolve("unhealthy");
 					}
 				} catch (err: any) {
 					let message = `Health check failed for ${this.url} by failing to parse JSON.`;
-					logError({ message, stack: err.stack });
+					// logError({ message, stack: err.stack });
+					logger.error(message, { error: createLogError(err) });
 					this.notifyFailure(message);
 					resolve("unhealthy");
 				} finally {
@@ -62,7 +64,8 @@ export class WebSocketStrategy implements Strategy {
 
 			ws.on("error", (err) => {
 				const message = `Health check failed for ${this.url} by failing to establish a connection.`;
-				logError({ message, stack: err.stack });
+				// logError({ message, stack: err.stack });
+				logger.error(message, { error: createLogError(err) });
 				this.notifyFailure(message);
 				ws.close();
 				resolve("unhealthy");

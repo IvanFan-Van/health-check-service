@@ -1,5 +1,5 @@
 import { loadNotifyConfig } from "./loadConfig.js";
-import { logError } from "./logger.js";
+import { createLogResponse, logError, logger } from "./logger.js";
 import axios from "axios";
 
 export class Notifier {
@@ -63,9 +63,8 @@ export class Notifier {
 				return tenant_access_token;
 			})
 			.catch((err) => {
-				logError({
-					message: `Failed to get authentication token with error ${err.message}`,
-					response: err.response.data,
+				logger.error(`Failed to get authentication token with error ${err.message}`, {
+					response: createLogResponse(err.response),
 				});
 				return null;
 			});
@@ -77,9 +76,7 @@ export class Notifier {
 			const openid = user.openid;
 			this.getAuthenticationToken().then((token) => {
 				if (!token) {
-					logError({
-						message: "Failed to send message with error: failed to get token.",
-					});
+					logger.error("Failed to send message with error: failed to get token.");
 					return;
 				}
 
@@ -101,10 +98,8 @@ export class Notifier {
 						receive_id_type: "open_id",
 					},
 				}).catch((err) => {
-					console.log(err.response.data);
-					logError({
-						message: `Failed to send message with error ${err.message}`,
-						response: err.response,
+					logger.error(`Failed to send message with error ${err.message}`, {
+						response: createLogResponse(err.response),
 					});
 					return;
 				});

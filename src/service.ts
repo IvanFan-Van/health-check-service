@@ -3,7 +3,7 @@ import { HealthCheckTask } from "./healthCheckTask.js";
 import Config from "./interfaces/config.js";
 import ServiceConfig from "./interfaces/serviceConfig.js";
 import ServiceInterface from "./interfaces/Service.js";
-import { logError, logInfo } from "./logger.js";
+import { logError, logInfo, logger } from "./logger.js";
 import { v4 as uuidv4 } from "uuid";
 
 /**
@@ -17,27 +17,24 @@ export class Service implements ServiceInterface {
 	public name: string;
 
 	constructor(serviceConfig: ServiceConfig) {
-		// logger.info(`Generating Health Check Tasks for ${serviceConfig.serviceName}...`);
-		logInfo({ message: `Generating Health Check Tasks for ${serviceConfig.serviceName}...` });
-		// logger.info(`Expected ${serviceConfig.configs.length} tasks`);
-		logInfo({ message: `Expected ${serviceConfig.configs.length} tasks` });
+		logger.info(`Generating Health Check Tasks for ${serviceConfig.serviceName}...`);
+		// logInfo({ message: `Generating Health Check Tasks for ${serviceConfig.serviceName}...` });
+		logger.info(`Expected ${serviceConfig.configs.length} tasks`);
+		// logInfo({ message: `Expected ${serviceConfig.configs.length} tasks` });
 		this.id = uuidv4();
 		this.name = serviceConfig.serviceName;
 		this.tasks = serviceConfig.configs
 			.map((config, id) => {
-				// logger.info(`Generating Health Check Task ${id + 1} type: ${config.type} ...`);
-				logInfo({ message: `Generating Health Check Task ${id + 1} type: ${config.type} ...` });
+				logger.info(`Generating Health Check Task ${id + 1} type: ${config.type} ...`);
+				// logInfo({ message: `Generating Health Check Task ${id + 1} type: ${config.type} ...` });
 				try {
 					ConfigValidator.validate(config);
 				} catch (err: any) {
-					// logger.error({
+					logger.error(err.message, { error: err });
+					// logError({
 					// 	message: err.message,
-					// 	obj: config,
+					// 	request: config,
 					// });
-					logError({
-						message: err.message,
-						request: config,
-					});
 					return null;
 				}
 				const task = new HealthCheckTask(config, config.schedule);
@@ -59,14 +56,7 @@ export class Service implements ServiceInterface {
 		try {
 			ConfigValidator.validate(config);
 		} catch (err: any) {
-			// logger.error({
-			// 	message: err.message,
-			// 	obj: config,
-			// });
-			logError({
-				message: err.message,
-				request: config,
-			});
+			logger.error(err.message, { error: err, config: config });
 		}
 		let task = new HealthCheckTask(config, config.schedule);
 		this.tasks.push(task);
@@ -78,8 +68,8 @@ export class Service implements ServiceInterface {
 	 * Start all health check tasks
 	 */
 	startHealthChecks() {
-		// logger.info("Start All Health Check Tasks...");
-		logInfo({ message: "Start All Health Check Tasks..." });
+		logger.info("Start All Health Check Tasks...");
+		// logInfo({ message: "Start All Health Check Tasks..." });
 		this.tasks.forEach((task) => task.start());
 	}
 
@@ -87,8 +77,8 @@ export class Service implements ServiceInterface {
 	 * Stop all health check tasks
 	 */
 	stopHealthChecks() {
-		// logger.info("Stop All Health Check Tasks...");
-		logInfo({ message: "Stop All Health Check Tasks..." });
+		logger.info("Stop All Health Check Tasks...");
+		// logInfo({ message: "Stop All Health Check Tasks..." });
 		this.tasks.forEach((task) => task.stop());
 	}
 

@@ -27,7 +27,7 @@ export const customLogger = createLogger({
 			format: format.combine(
 				format.colorize(),
 				format.printf((info) => {
-					return `${info.timestamp} | ${info.level}: ${info.message.description}`;
+					return `${info.timestamp} [${info.level}]: ${info.message.description}`;
 				})
 			),
 		}),
@@ -147,10 +147,27 @@ export const logger = createLogger({
 	],
 });
 
-logger.info("This is info");
-logger.error("This is error");
-logger.warn("This is warn");
+export function createLogRequest(request: any) {
+	return {
+		url: request.url,
+		method: request.method,
+		headers: request.headers,
+		body: request.data,
+	};
+}
 
-// serverLogger.info("This is info");
-// let err = new Error("this is error logger");
-// serverLogger.error({ message: err.message, stack: err.stack });
+export function createLogResponse(response: any) {
+	return {
+		status: response.status,
+		headers: response.headers,
+		body: response.data,
+	};
+}
+
+export function createLogError(error: any) {
+	return {
+		message: error.message,
+		stack: error.stack,
+		errors: error.errors,
+	};
+}

@@ -1,7 +1,7 @@
 import EventSource from "eventsource";
 import Config from "../interfaces/config.js";
 import Strategy from "../interfaces/strategy.js";
-import { logError, logInfo } from "../logger.js";
+import { createLogError, logError, logInfo, logger } from "../logger.js";
 
 export class EventStreamStrategy implements Strategy {
 	private url: string;
@@ -22,22 +22,26 @@ export class EventStreamStrategy implements Strategy {
 						answer += result.content;
 					}
 				} catch (error: any) {
-					logError({ message: `Error parsing JSON: ${error}`, stack: error.stack });
+					// logError({ message: `Error parsing JSON: ${error}`, stack: error.stack });
+					logger.error(`Error parsing JSON: ${error}`, { error: createLogError(error) });
 					resolve("unhealthy");
 				}
 			});
 
 			eventSource.addEventListener("error", (event) => {
-				logError({ message: `EventSource error: ${JSON.stringify(event)}` });
+				// logError({ message: `EventSource error: ${JSON.stringify(event)}` });
+				logger.error(`EventSource error: ${JSON.stringify(event)}`);
 				resolve("unhealthy");
 			});
 
 			eventSource.addEventListener("close", (event) => {
 				if (answer !== "") {
-					logInfo({ message: `Health check for ${this.url} succeeded` });
+					logger.info(`Health check for ${this.url} succeeded`);
+					// logInfo({ message: `Health check for ${this.url} succeeded` });
 					resolve("healthy");
 				} else {
-					logError({ message: `Health check for ${this.url} failed` });
+					// logError({ message: `Health check for ${this.url} failed` });
+					logger.error(`Health check for ${this.url} failed`);
 					resolve("unhealthy");
 				}
 				eventSource.close();
