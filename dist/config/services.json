@@ -1,0 +1,132 @@
+[
+	{
+		"serviceName": "树洞API",
+		"configs": [
+			{
+				"type": "http",
+				"url": "https://api.tripleuni.com/v4/post/list/all.php",
+				"method": "POST",
+				"headers": {
+					"Content-Type": "application/x-www-form-urlencoded"
+				},
+				"body": {
+					"token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJIS1XlmZflmZciLCJhdWQiOiJIS1VlciIsImlhdCI6MTcwNjQxMjU4NS42Mzc5OTIsImV4cCI6MjAyMjAzMTc4NS42Mzc5OTIsInVzZXJfaXRzYyI6InNlcnZpY2UiLCJ1c2VyX3NjaG9vbF9sYWJlbCI6IkhLVSIsInBsYXRmb3JtIjoic2VydmljZSJ9.SOS0wV5k7KFOp8HWPT3OiqIvCeYV3j_SKZB_6cesHgg"
+				},
+				"schedule": "* * * * *",
+				"validator": "(data) => {\nreturn data.code === 200;\n}"
+			},
+			{
+				"type": "http",
+				"url": "https://api.tripleuni.com/v4/post/list/hot.php",
+				"method": "POST",
+				"headers": {
+					"Content-Type": "application/x-www-form-urlencoded"
+				},
+				"body": {
+					"token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJIS1XlmZflmZciLCJhdWQiOiJIS1VlciIsImlhdCI6MTcwNjQxMjU4NS42Mzc5OTIsImV4cCI6MjAyMjAzMTc4NS42Mzc5OTIsInVzZXJfaXRzYyI6InNlcnZpY2UiLCJ1c2VyX3NjaG9vbF9sYWJlbCI6IkhLVSIsInBsYXRmb3JtIjoic2VydmljZSJ9.SOS0wV5k7KFOp8HWPT3OiqIvCeYV3j_SKZB_6cesHgg",
+					"uni_post_id": 304291
+				},
+				"schedule": "* * * * *",
+				"validator": "(data) => {\nreturn data.code === 200;\n}"
+			},
+			{
+				"type": "http",
+				"url": "https://api.tripleuni.com/v4/post/single/post.php",
+				"method": "POST",
+				"headers": {
+					"Content-Type": "application/x-www-form-urlencoded"
+				},
+				"body": {
+					"token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJIS1XlmZflmZciLCJhdWQiOiJIS1VlciIsImlhdCI6MTcwNjQxMjU4NS42Mzc5OTIsImV4cCI6MjAyMjAzMTc4NS42Mzc5OTIsInVzZXJfaXRzYyI6InNlcnZpY2UiLCJ1c2VyX3NjaG9vbF9sYWJlbCI6IkhLVSIsInBsYXRmb3JtIjoic2VydmljZSJ9.SOS0wV5k7KFOp8HWPT3OiqIvCeYV3j_SKZB_6cesHgg",
+					"post_msg": "test",
+					"post_topic": "情感",
+					"user_is_real_name": true,
+					"post_public": 2,
+					"post_is_uni": true
+				},
+				"schedule": "0 * * * *",
+				"validator": "(data) => {\nreturn data.code === 200;\n}"
+			},
+			{
+				"type": "http",
+				"url": "https://api.tripleuni.com/v4/post/list/search.php",
+				"method": "POST",
+				"headers": {
+					"Content-Type": "application/x-www-form-urlencoded"
+				},
+				"body": {
+					"token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJIS1XlmZflmZciLCJhdWQiOiJIS1VlciIsImlhdCI6MTcwNjQxMjU4NS42Mzc5OTIsImV4cCI6MjAyMjAzMTc4NS42Mzc5OTIsInVzZXJfaXRzYyI6InNlcnZpY2UiLCJ1c2VyX3NjaG9vbF9sYWJlbCI6IkhLVSIsInBsYXRmb3JtIjoic2VydmljZSJ9.SOS0wV5k7KFOp8HWPT3OiqIvCeYV3j_SKZB_6cesHgg",
+					"key_word": "ECON1210",
+					"search_mode": "default"
+				},
+				"schedule": "* * * * *",
+				"validator": "(data) => {\nreturn data.code === 200;\n}"
+			}
+		]
+	},
+	{
+		"serviceName": "Other",
+		"configs": [
+			{
+				"type": "http",
+				"url": "https://upload.tripleuni.com/index.php?bucket=boatonland-1307992092&region=ap-beijing",
+				"method": "GET",
+				"schedule": "* * * * *",
+				"validator": "(responseJson) => {\nif (responseJson.credentials.sessionToken) {\nreturn true;\n}\nreturn false;\n}"
+			},
+			{
+				"type": "http",
+				"url": "https://i.boatonland.com/avatar/hkughost.svg",
+				"method": "GET",
+				"schedule": "* * * * *"
+			},
+			{
+				"type": "http",
+				"url": "https://tripleuni.com",
+				"method": "GET",
+				"schedule": "* * * * *"
+			},
+			{
+				"type": "http",
+				"url": "https://terms.tripleuni.com/hku/agreement/",
+				"method": "GET",
+				"schedule": "* * * * *"
+			},
+			{
+				"type": "websocket",
+				"url": "wss://ws.tripleuni.com:7230",
+				"body": {
+					"type": "bind",
+					"token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJIS1XlmZflmZciLCJhdWQiOiJIS1VlciIsImlhdCI6MTcwNjQxMjU4NS42Mzc5OTIsImV4cCI6MjAyMjAzMTc4NS42Mzc5OTIsInVzZXJfaXRzYyI6InNlcnZpY2UiLCJ1c2VyX3NjaG9vbF9sYWJlbCI6IkhLVSIsInBsYXRmb3JtIjoic2VydmljZSJ9.SOS0wV5k7KFOp8HWPT3OiqIvCeYV3j_SKZB_6cesHgg"
+				},
+				"schedule": "* * * * *",
+				"validator": "(data) => {\nreturn JSON.stringify(data) === JSON.stringify({ \"type\": \"bind\", \"bind_result\": \"success\" });\n}"
+			},
+			{
+				"type": "eventstream",
+				"url": "https://chat.tripleuni.com/?question=hello&token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJIS1XlmZflmZciLCJhdWQiOiJIS1VlciIsImlhdCI6MTcwNjQxMjU4NS42Mzc5OTIsImV4cCI6MjAyMjAzMTc4NS42Mzc5OTIsInVzZXJfaXRzYyI6InNlcnZpY2UiLCJ1c2VyX3NjaG9vbF9sYWJlbCI6IkhLVSIsInBsYXRmb3JtIjoic2VydmljZSJ9.SOS0wV5k7KFOp8HWPT3OiqIvCeYV3j_SKZB_6cesHgg&histroy=[]",
+				"schedule": "0 * * * *"
+			}
+		]
+	},
+	{
+		"serviceName": "API测试集",
+		"configs": [
+			{
+				"type": "http",
+				"url": "https://api.tripleuni.com/v4/post/list/all.php",
+				"method": "POST",
+				"headers": {
+					"Content-Type": "application/x-www-form-urlencoded"
+				},
+				"schedule": "* * * * *"
+			},
+			{
+				"type": "http",
+				"url": "https://localhost:3000",
+				"method": "GET",
+				"schedule": "* * * * *"
+			}
+		]
+	}
+]
